@@ -43,6 +43,7 @@ cmd:option('-verbose', 2,
            'the higher the level, the more information is printed to screen')
 cmd:option('-threads', 1, 'number of BLAS threads')
 cmd:option('-gpu', -1, 'gpu flag')
+cmd:option('-gpulib', 'cu', 'gpu library type cu=CUDA(default), cl=OpenCL')
 
 cmd:text()
 

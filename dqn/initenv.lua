@@ -55,14 +55,23 @@ function torchSetup(_opt)
 
     --- set gpu device
     if opt.gpu and opt.gpu >= 0 then
-        require 'cutorch'
-        require 'cunn'
         if opt.gpu == 0 then
             local gpu_id = tonumber(os.getenv('GPU_ID'))
             if gpu_id then opt.gpu = gpu_id+1 end
         end
-        if opt.gpu > 0 then cutorch.setDevice(opt.gpu) end
-        opt.gpu = cutorch.getDevice()
+        if opt.gpulib=='cl' then
+            cutorch = require 'cltorch'
+            cunn = require 'clnn'
+            if opt.gpu > 0 then cltorch.setDevice(opt.gpu) end
+            opt.gpu = cltorch.getDevice()
+        else
+            -- use cuda by default
+            require 'cutorch'
+            require 'cunn'
+            if opt.gpu > 0 then cutorch.setDevice(opt.gpu) end
+            opt.gpu = cutorch.getDevice()
+        end
+        print('Using GPU lib:', opt.gpulib)
         print('Using GPU device id:', opt.gpu-1)
     else
         opt.gpu = -1
@@ -85,9 +94,16 @@ function torchSetup(_opt)
     end
     local firstRandInt = torch.random()
     if opt.gpu >= 0 then
-        cutorch.manualSeed(firstRandInt)
-        if opt.verbose >= 1 then
-            print('CUTorch Seed:', cutorch.initialSeed())
+        if opt.gpulib=='cu' then
+            cutorch.manualSeed(firstRandInt)
+            if opt.verbose >= 1 then
+                print('CUTorch Seed:', cutorch.initialSeed())
+            end
+        else
+            torch.manualSeed(firstRandInt)
+            if opt.verbose >= 1 then
+                print('Torch Seed:', torch.initialSeed())
+            end
         end
     end
 
